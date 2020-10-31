@@ -1,0 +1,16 @@
+{
+
+	"x0" : 0,
+	"y0" : 0,
+	"theta0" : 45,
+	"rotation" : -90,
+	"total_steps": 11,  
+	
+	"covarianz":
+	[
+		{
+			"wheel_left"  : 0.001,
+			"wheel_right" : 0.001
+		} 
+	]
+}
