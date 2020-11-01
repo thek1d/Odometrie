@@ -58,21 +58,33 @@ class Ellipse_Calulator():
         self._gradientRouteMatrix   = None
         self._gradientPointMatrix   = None
         self._covarianceMatrixDrive = None
+    
+    def get_CovarianceMatrix(self, covarianceMatrixPreviousStep , dataset, delta_route, delta_angle, delta_sr, delta_sl):
+        gradientPointMatrix   = self.__get_gradientPointMatrix(dataset, delta_route, delta_angle)
+        gradientRouteMatrix   = self.__get_gradientRouteMatrix(dataset, delta_route, delta_angle)
+        covarianceDriveMatrix = self.__get_covarianceDriveMatrix(dataset, delta_sr, delta_sl)
+        covarianceMatrix      = self.__calc_covarianceMatrix(gradientPointMatrix, covarianceMatrixPreviousStep, 
+                                                             gradientRouteMatrix, covarianceDriveMatrix)
+        
+        return covarianceMatrix
+        
           
     
-    def calc_covarianceMatrix(self, gradientPointMatrix, gradientRouteMatrix, covarianceRouteMatrix, covariancePointMatrix):
-        covarianceMatrix = np.add(np.matmul(gradientPointMatrix, np.matmul(covariancePointMatrix, np.transpose(gradientPointMatrix))),
-                           np.matmul(gradientPointMatrix,(np.matmul(covarianceRouteMatrix, np.transpose(gradientRouteMatrix)))))
+    def __calc_covarianceMatrix(self, gradientPointMatrix, covarianceMatrixPreviousStep , gradientRouteMatrix, covarianceDriveMatrix):
+        covarianceMatrix = np.add((np.matmul(gradientPointMatrix, np.matmul(covarianceMatrixPreviousStep, np.transpose(gradientPointMatrix)))),
+                                   np.matmul(gradientRouteMatrix, np.matmul(covarianceDriveMatrix, np.transpose(gradientRouteMatrix))))
         return covarianceMatrix
+        
 
-    def get_gradientPointMatrix(self, dataset, delta_route, delta_angle):
-        gradientPointMatrix = [        [1, 0, -delta_route * math.sin(dataset['theta0'] + delta_angle * .5)],
-                                       [0, 1,  delta_route * math.cos(dataset['theta0'] + delta_angle * .5)],
-                                       [0, 0,                                                             1] ]
+    def __get_gradientPointMatrix(self, dataset, delta_route, delta_angle):
+        gradientPointMatrix = [ [1, 0, -delta_route * math.sin(dataset['theta0'] + delta_angle * .5)],
+                                [0, 1,  delta_route * math.cos(dataset['theta0'] + delta_angle * .5)],
+                                [0, 0,                                                             1]
+                              ]
         return gradientPointMatrix
     
     
-    def get_gradientRouteMatrix(self, dataset, delta_route, delta_angle):
+    def __get_gradientRouteMatrix(self, dataset, delta_route, delta_angle):
         gradientRouteMatrix = [ [.5 * math.cos(dataset['theta0']+ delta_angle * .5)  - delta_route/(2*dataset['wheel_distance']) * math.sin(dataset['theta0'] + delta_angle * .5), 
                                  .5 * math.cos(dataset['theta0']+ delta_angle * .5)  + delta_route/(2*dataset['wheel_distance']) * math.sin(dataset['theta0'] + delta_angle * .5)],
                                 [.5 * math.sin(dataset['theta0']+ delta_angle * .5)  + delta_route/(2*dataset['wheel_distance']) * math.cos(dataset['theta0'] + delta_angle * .5),
@@ -82,7 +94,7 @@ class Ellipse_Calulator():
         return gradientRouteMatrix
     
     
-    def get_covarianceDriveMatrix(self, dataset, delta_sr, delta_sl):
+    def __get_covarianceDriveMatrix(self, dataset, delta_sr, delta_sl):
         covarianceDriveMatrix = [       [dataset['covariance']['wheel_right'] * math.fabs(delta_sr), 0],
                                         [0, dataset['covariance']['wheel_left'] * math.fabs(delta_sl) ] 
                                 ]

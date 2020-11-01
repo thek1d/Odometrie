@@ -65,22 +65,20 @@ if __name__ == '__main__':
     deltaAngle = ec.calcAngleDifference(delta_sr=dataset['step_size'], delta_sl=dataset['step_size'], 
                                         wheel_distance=dataset['wheel_distance'])
     
-    gradienPointMatrix = ec.get_gradientPointMatrix(dataset=dataset, 
-                                                    delta_route=deltaRoute, delta_angle=deltaAngle)
+    initialCovarianceMatrix      = [[0,0,0],
+                                    [0,0,0],
+                                    [0,0,0]]
     
-    gradientRouteMatrix = ec.get_gradientRouteMatrix(dataset=dataset, 
-                                                     delta_route=deltaRoute, delta_angle=deltaAngle)
+    covarianceMatrixPreviousStep = initialCovarianceMatrix
     
-    covarianceDriveMatrix = ec.get_covarianceDriveMatrix(dataset=dataset, delta_sr=dataset['step_size'], 
-                                                         delta_sl=dataset['step_size'])
     
-    gradientRouteMatrix = ec.get_gradientRouteMatrix(dataset=dataset, 
-                                                     delta_route=deltaRoute, delta_angle=deltaAngle)
+    covarianceMatrixPreviousStep = ec.get_CovarianceMatrix(covarianceMatrixPreviousStep, dataset, deltaRoute, deltaAngle,
+                                                           delta_sr=dataset['step_size'], delta_sl=dataset['step_size'])
     
-    covarianceMatrix = ec.calc_covarianceMatrix(gradienPointMatrix, gradientRouteMatrix, gradientRouteMatrix, gradienPointMatrix)
+    print(covarianceMatrixPreviousStep)
         
     pt = Plotter()
-    pt.plotMeanPoints(dataset=dataset)
+    pt.plotMeanPoints(dataset)
     
     
     
