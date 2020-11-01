@@ -1,19 +1,20 @@
 {
 
-	"x0" : 0,
-	"y0" : 0,
-	"step_size" : 0.2,
-	"movement_size_1" : 5,
-	"movement_size_2" : 5,
+	"x0" 					 : 0,
+	"y0" 					 : 0,
+	"step_size" 			 : 0.2,
+	"movement_size_1" 		 : 5,
+	"movement_size_2" 		 : 5,
 	"movement_size_rotation" : 1,
-	"theta0" : 45,
-	"rotation" : -90,
+	"wheel_distance" 		 : 0.2,
+	"theta0" 				 : 45,
+	"rotation" 				 : -90,
 	
-	"covarianz":
+	"covariance":
 	[
 		{
-			"wheel_left"  : 0.001,
-			"wheel_right" : 0.001
+			"wheel_left"  	 : 0.001,
+			"wheel_right"    : 0.001
 		} 
 	]
 }

@@ -5,7 +5,7 @@ Created on Oct 31, 2020
 '''
 
 import json, math
-from Ellipsoid.ellipsoid_calculator import Plotter
+from Ellipsoid.ellipsoid_calculator import Plotter, Ellipse_Calulator
 
 class Config():
             
@@ -25,7 +25,8 @@ class Config():
                     {
                         'wheel_left' : 0,
                         'wheel_right': 0
-                    }
+                    },
+                    'wheel_distance' : 0
               }
     
     @staticmethod
@@ -43,22 +44,44 @@ class Config():
         dataset['total_steps']            = dataset['movement_size_1'] + dataset['movement_size_2']
         dataset['theta0']                 = math.radians(config['theta0'])
         dataset['rotation']               = math.radians(config['rotation'])
+        dataset['wheel_distance']         = config['wheel_distance']
                 
-        covariance = config['covarianz']
+        covariance = config['covariance']
         
         for elem in range(len(covariance)):
             dataset['covariance']['wheel_left']  = covariance[elem].get('wheel_left')
             dataset['covariance']['wheel_right'] = covariance[elem].get('wheel_right')
         
         
-        
 if __name__ == '__main__':
     
     dataset = Config.initDataStucture()
     Config.readJson(path2JsonFile="config.json", dataset=dataset)
+         
     
+    ec = Ellipse_Calulator()
+    
+    deltaRoute = ec.calcRouteDifference(delta_sr=dataset['step_size'], delta_sl=dataset['step_size'])
+    deltaAngle = ec.calcAngleDifference(delta_sr=dataset['step_size'], delta_sl=dataset['step_size'], 
+                                        wheel_distance=dataset['wheel_distance'])
+    
+    gradienPointMatrix = ec.get_gradientPointMatrix(dataset=dataset, 
+                                                    delta_route=deltaRoute, delta_angle=deltaAngle)
+    
+    gradientRouteMatrix = ec.get_gradientRouteMatrix(dataset=dataset, 
+                                                     delta_route=deltaRoute, delta_angle=deltaAngle)
+    
+    covarianceDriveMatrix = ec.get_covarianceDriveMatrix(dataset=dataset, delta_sr=dataset['step_size'], 
+                                                         delta_sl=dataset['step_size'])
+    
+    gradientRouteMatrix = ec.get_gradientRouteMatrix(dataset=dataset, 
+                                                     delta_route=deltaRoute, delta_angle=deltaAngle)
+    
+    covarianceMatrix = ec.calc_covarianceMatrix(gradienPointMatrix, gradientRouteMatrix, gradientRouteMatrix, gradienPointMatrix)
+        
     pt = Plotter()
     pt.plotMeanPoints(dataset=dataset)
+    
     
     
     
