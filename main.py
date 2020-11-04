@@ -7,6 +7,13 @@ Created on Oct 31, 2020
 import json, math
 from Ellipsoid.ellipsoid_calculator import Plotter, Ellipse_Calulator
 
+''' global data strucutre for endresults '''
+data = {'mean_values'         : list(tuple()),
+        'covariance_matrixes' : [[],[],[],[],[],[],[],[],[],[],[]],
+        'eigenvalues'         : list(tuple()),
+        'main_axis_sections'  : list(tuple())
+        }
+
 class Config():
             
     @staticmethod
@@ -51,15 +58,16 @@ class Config():
         for elem in range(len(covariance)):
             dataset['covariance']['wheel_left']  = covariance[elem].get('wheel_left')
             dataset['covariance']['wheel_right'] = covariance[elem].get('wheel_right')
-        
+
         
 if __name__ == '__main__':
     
     dataset = Config.initDataStucture()
-    Config.readJson(path2JsonFile="config.json", dataset=dataset)
-         
+    Config.readJson(path2JsonFile="config.json", dataset=dataset)     
     
     ec = Ellipse_Calulator()
+    pt = Plotter()
+    pt.plotMeanPoints(dataset, data)
     
     deltaRoute = ec.calcRouteDifference(delta_sr=dataset['step_size'], delta_sl=dataset['step_size'])
     deltaAngle = ec.calcAngleDifference(delta_sr=dataset['step_size'], delta_sl=dataset['step_size'], 
@@ -68,17 +76,28 @@ if __name__ == '__main__':
     initialCovarianceMatrix      = [[0,0,0],
                                     [0,0,0],
                                     [0,0,0]]
-    
+        
     covarianceMatrixPreviousStep = initialCovarianceMatrix
     
+    delta_theta = 0
     
-    covarianceMatrixPreviousStep = ec.get_CovarianceMatrix(covarianceMatrixPreviousStep, dataset, deltaRoute, deltaAngle,
-                                                           delta_sr=dataset['step_size'], delta_sl=dataset['step_size'])
-    
-    print(covarianceMatrixPreviousStep)
+    for step in range(dataset['total_steps']+1):
+        if step <= dataset['movement_size_1']:
+            covarianceMatrixPreviousStep = ec.get_CovarianceMatrix(covarianceMatrixPreviousStep, dataset, deltaRoute, deltaAngle, delta_theta=delta_theta,
+                                                                   delta_sr=dataset['step_size'], delta_sl=dataset['step_size'])
+        else:
+            delta_theta = dataset['rotation']
+            covarianceMatrixPreviousStep = ec.get_CovarianceMatrix(covarianceMatrixPreviousStep, dataset, deltaRoute, deltaAngle ,delta_theta=delta_theta,
+                                                                   delta_sr=dataset['step_size'], delta_sl=dataset['step_size'])
         
-    pt = Plotter()
-    pt.plotMeanPoints(dataset)
+        data['covariance_matrixes'][step].append(covarianceMatrixPreviousStep)
+        ellipse = ec.calcSigmaEllipsoids(data, step)
+        pt.plotEllipsoid(ellipse)
+        
+    pt.showPlot()
+                   
+        
+    
     
     
     
